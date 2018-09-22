@@ -1,0 +1,11 @@
+--- ../aircrack_ng_simd.m4.orig	2018-09-22 18:23:30.335071739 +0000
++++ ./build/m4/aircrack_ng_simd.m4	2018-09-22 20:35:42.482934088 +0000
+@@ -91,7 +91,7 @@
+ 
+ if test $IS_ARM -eq 1
+ then
+-    AX_CHECK_COMPILE_FLAG([-mfpu=neon], [
++    AX_CHECK_COMPILE_FLAG([-Werror -mfpu=neon], [
+         AX_APPEND_FLAG(-mfpu=neon, [arm_neon_[]_AC_LANG_ABBREV[]flags])
+         AC_SUBST(arm_neon_[]_AC_LANG_ABBREV[]flags)
+     ])
