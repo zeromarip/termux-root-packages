@@ -1,0 +1,88 @@
+--- ../hdaccess.c.orig	2019-02-07 20:40:22.926618040 +0100
++++ ./src/hdaccess.c	2019-02-07 21:25:38.963264702 +0100
+@@ -294,6 +294,85 @@
+       list_disk=insert_new_disk(list_disk, file_test_availability(device, verbose, testdisk_mode));
+     }
+   }
++#elif defined(__ANDROID__)
++  {
++    int j;
++    char device[100];
++    char device_ide[]="/dev/hda";
++    char device_scsi[]="/dev/block/sda";
++    char device_ida[]="/dev/ida/c0d0";
++    char device_cciss[]="/dev/block/cciss/c0d0";
++    char device_p_ide[]="/dev/pda";
++    char device_i2o_hd[]="/dev/i2o/hda";
++    char device_mmc[]="/dev/mmcblk0";
++    /* Disk IDE */
++    for(i=0;i<8;i++)
++    {
++      device_ide[strlen(device_ide)-1]='a'+i;
++      list_disk=insert_new_disk(list_disk, file_test_availability(device_ide, verbose, testdisk_mode));
++    }
++    /* Disk SCSI */
++    for(i=0;i<26;i++)
++    {
++      device_scsi[strlen(device_scsi)-1]='a'+i;
++      list_disk=insert_new_disk(list_disk, file_test_availability(device_scsi, verbose, testdisk_mode));
++    }
++    /* Device RAID Compaq */
++    for(j=0;j<8;j++)
++    {
++      device_ida[strlen(device_ida)-3]='0'+j;
++      for(i=0;i<8;i++)
++      {
++	device_ida[strlen(device_ida)-1]='0'+i;
++	list_disk=insert_new_disk(list_disk, file_test_availability(device_ida, verbose, testdisk_mode));
++      }
++    }
++    for(i=0;i<8;i++)
++    {
++      device_cciss[strlen(device_cciss)-1]='0'+i;
++      list_disk=insert_new_disk(list_disk, file_test_availability(device_cciss, verbose, testdisk_mode));
++    }
++    /* Device RAID */
++    for(i=0;i<10;i++)
++    {
++      snprintf(device,sizeof(device),"/dev/rd/c0d%u",i);
++      list_disk=insert_new_disk(list_disk, file_test_availability(device, verbose, testdisk_mode));
++    }
++    /* Device RAID IDE */
++    for(i=0;i<15;i++)
++    {
++      snprintf(device,sizeof(device),"/dev/ataraid/d%u",i);
++      list_disk=insert_new_disk(list_disk, file_test_availability(device, verbose, testdisk_mode));
++    }
++    /* Parallel port IDE disk */
++    for(i=0;i<4;i++)
++    {
++      device_p_ide[strlen(device_p_ide)-1]='a'+i;
++      list_disk=insert_new_disk(list_disk, file_test_availability(device_p_ide, verbose, testdisk_mode));
++    }
++    /* I2O hard disk */
++    for(i=0;i<26;i++)
++    {
++      device_i2o_hd[strlen(device_i2o_hd)-1]='a'+i;
++      list_disk=insert_new_disk(list_disk, file_test_availability(device_i2o_hd, verbose, testdisk_mode));
++    }
++    /* Memory card */
++    for(i=0;i<10;i++)
++    {
++      device_mmc[strlen(device_mmc)-1]='0'+i;
++      list_disk=insert_new_disk(list_disk, file_test_availability(device_mmc, verbose, testdisk_mode));
++    }
++#ifdef HAVE_GLOB_H
++    list_disk=hd_glob_parse("/dev/mapper/*", list_disk, verbose, testdisk_mode);
++    /* Software Raid (partition level) */
++    list_disk=hd_glob_parse("/dev/md*", list_disk, verbose, testdisk_mode);
++    list_disk=hd_glob_parse("/dev/sr?", list_disk, verbose, testdisk_mode);
++    /* Software (ATA)Raid configured (disk level) via dmraid */
++    list_disk=hd_glob_parse("/dev/dm-*", list_disk, verbose, testdisk_mode);
++    /* Xen virtual disks */
++    list_disk=hd_glob_parse("/dev/xvd?", list_disk, verbose, testdisk_mode);
++#endif
++  }
+ #elif defined(TARGET_LINUX)
+   {
+     int j;
